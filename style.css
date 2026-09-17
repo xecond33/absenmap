@@ -138,7 +138,8 @@ body::before {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-md) 0;
-  gap: var(--space-md);
+  gap: var(--space-sm);
+  flex-wrap: wrap;
 }
 
 .logo {
@@ -345,6 +346,8 @@ body::before {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* ==============================
@@ -917,6 +920,9 @@ body::before {
   border-radius: var(--radius-xl);
   width: 100%;
   max-width: 440px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: var(--shadow-lg);
   transform: scale(0.95) translateY(10px);
   transition: transform var(--duration) var(--ease);
@@ -943,6 +949,7 @@ body::before {
   justify-content: space-between;
   padding: var(--space-lg);
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -969,6 +976,8 @@ body::before {
 .modal-body {
   padding: var(--space-lg);
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .modal-footer {
@@ -978,6 +987,7 @@ body::before {
   gap: var(--space-sm);
   padding: var(--space-md) var(--space-lg);
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 /* Form */
@@ -999,8 +1009,8 @@ body::before {
   letter-spacing: 0.05em;
 }
 
-.form-group input[type="number"],
 .form-group input[type="text"],
+.form-group input[type="number"],
 .form-group input[type="email"],
 .form-group input[type="password"] {
   width: 100%;
@@ -1284,6 +1294,74 @@ body::before {
   .btn-label {
     display: none;
   }
+
+  .header-inner {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .logo {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .auth-box {
+    padding: var(--space-lg);
+  }
+
+  .modal {
+    max-height: 92vh;
+  }
+
+  .modal-header {
+    padding: var(--space-md);
+  }
+
+  .modal-body {
+    padding: var(--space-md);
+  }
+
+  .modal-footer {
+    padding: var(--space-sm) var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .modal-footer .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .duration-options,
+  .reset-mode-options {
+    gap: 6px;
+  }
+
+  .duration-btn,
+  .reset-mode-btn {
+    font-size: 0.72rem;
+    padding: 8px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-email {
+    max-width: 110px;
+    font-size: 0.7rem;
+  }
+
+  .sync-badge {
+    font-size: 0.58rem;
+    padding: 2px 7px;
+  }
+
+  .logo h1 {
+    font-size: 1.1rem;
+  }
 }
 
 @media (max-width: 400px) {
@@ -1317,6 +1395,23 @@ body::before {
 
   .card-days-grid {
     gap: 3px;
+  }
+
+  .card-name {
+    font-size: 0.95rem;
+  }
+
+  .btn-claim {
+    font-size: 0.76rem;
+    padding: 8px 10px;
+  }
+
+  .reset-hour-row input[type="number"] {
+    width: 100%;
+  }
+
+  .auth-box {
+    padding: var(--space-md);
   }
 }
 

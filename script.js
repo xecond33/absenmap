@@ -24,6 +24,7 @@
   let currentFilter = 'all';
   let searchQuery = '';
   let editingId = null; // null = add mode, id = edit mode
+  let editingOriginalProgress = 0;
   let selectedDuration = 30;
   let selectedResetMode = 'fixed'; // 'fixed' | 'rolling'
   let selectedResetHour = 0; // dipakai kalau resetMode === 'fixed'
@@ -70,6 +71,7 @@
   const $inputName = document.getElementById('input-name');
   const $inputNote = document.getElementById('input-note');
   const $formGroupInitialProgress = document.getElementById('form-group-initial-progress');
+  const $labelInitialProgress = document.getElementById('label-initial-progress');
   const $inputInitialProgress = document.getElementById('input-initial-progress');
   const $durationOptions = document.getElementById('duration-options');
   const $resetModeOptions = document.getElementById('reset-mode-options');
@@ -656,8 +658,18 @@
     selectedDuration = mode === 'edit' ? item.duration : 30;
     selectedResetMode = mode === 'edit' ? (item.resetMode || 'fixed') : 'fixed';
     selectedResetHour = mode === 'edit' ? (item.resetHour || 0) : 0;
-    $formGroupInitialProgress.style.display = mode === 'edit' ? 'none' : '';
-    $inputInitialProgress.value = 0;
+
+    $formGroupInitialProgress.style.display = '';
+    if (mode === 'edit') {
+      editingOriginalProgress = getChecked(item);
+      $inputInitialProgress.value = editingOriginalProgress;
+      $labelInitialProgress.textContent = 'Ubah Jadi Sudah Absen Berapa Hari? (opsional, biarkan kalau gak mau ubah)';
+    } else {
+      editingOriginalProgress = 0;
+      $inputInitialProgress.value = 0;
+      $labelInitialProgress.textContent = 'Sudah Absen Berapa Hari? (opsional, buat data lama)';
+    }
+
     updateDurationBtns();
     updateResetModeBtns();
     openModal($modalForm);
@@ -723,12 +735,23 @@
         const oldDuration = item.duration;
         item.name = name;
         item.note = note;
-        item.duration = selectedDuration;
         item.resetMode = selectedResetMode;
         item.resetHour = selectedResetHour;
 
-        // Adjust attendance array
-        if (selectedDuration > oldDuration) {
+        let newProgress = parseInt($inputInitialProgress.value);
+        if (isNaN(newProgress)) newProgress = editingOriginalProgress;
+        newProgress = Math.max(0, Math.min(selectedDuration, newProgress));
+        const progressChanged = newProgress !== editingOriginalProgress;
+
+        item.duration = selectedDuration;
+
+        if (progressChanged) {
+          // Angka absen diubah manual -> susun ulang jadi N hari pertama tercentang,
+          // dan geser tanggal mulai supaya "hari ini" pas lanjut dari hari ke N+1.
+          item.attendance = Array.from({ length: selectedDuration }, (_, i) => i < newProgress);
+          item.startDate = shiftDateStr(item.resetHour, newProgress);
+          item.lastClaimAt = null;
+        } else if (selectedDuration > oldDuration) {
           while (item.attendance.length < selectedDuration) item.attendance.push(false);
         } else if (selectedDuration < oldDuration) {
           const lostChecks = item.attendance.slice(selectedDuration).filter(Boolean).length;
