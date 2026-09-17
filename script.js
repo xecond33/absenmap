@@ -10,15 +10,6 @@
   // ---- Constants ----
   const STORAGE_KEY = 'absensimap_data';
 
-  const DEFAULT_DATA = [
-    { name: '404', duration: 30 },
-    { name: '90s blok', duration: 30 },
-    { name: 'flux', duration: 30 },
-    { name: 'lawson', duration: 30 },
-    { name: 'la miami', duration: 30 },
-    { name: 'noir pulse', duration: 30 },
-  ];
-
   // ---- State ----
   let data = [];
   let currentFilter = 'all';
@@ -516,6 +507,8 @@
 
     if (currentFilter === 'running') result = result.filter(d => getStatus(d) === 'running');
     else if (currentFilter === 'done') result = result.filter(d => getStatus(d) === 'done');
+    else if (currentFilter === 'not-today') result = result.filter(d => getClaimStatus(d).state === 'absent');
+    else if (currentFilter === 'done-today') result = result.filter(d => getClaimStatus(d).state === 'present');
 
     return result;
   }
@@ -736,6 +729,10 @@
       const item = data.find(d => d.id === editingId);
       if (item) {
         const oldDuration = item.duration;
+        const oldResetMode = item.resetMode || 'fixed';
+        const oldResetHour = item.resetHour || 0;
+        const resetSchemeChanged = (oldResetMode !== selectedResetMode) || (oldResetHour !== selectedResetHour);
+
         item.name = name;
         item.note = note;
         item.resetMode = selectedResetMode;
@@ -751,34 +748,46 @@
         if (progressChanged) {
           // Angka absen diubah manual -> susun ulang jadi N hari pertama tercentang,
           // dan geser tanggal mulai supaya "hari ini" pas lanjut dari hari ke N+1.
+          // (item.resetHour di atas sudah nilai baru, jadi otomatis ikut skema reset yang baru.)
           item.attendance = Array.from({ length: selectedDuration }, (_, i) => i < newProgress);
           item.startDate = shiftDateStr(item.resetHour, newProgress);
           item.lastClaimAt = null;
-        } else if (selectedDuration > oldDuration) {
-          while (item.attendance.length < selectedDuration) item.attendance.push(false);
-        } else if (selectedDuration < oldDuration) {
-          const lostChecks = item.attendance.slice(selectedDuration).filter(Boolean).length;
-          if (lostChecks > 0) {
-            closeModal($modalForm);
-            showConfirm(
-              'Konfirmasi Perubahan',
-              `Durasi dikurangi dari ${oldDuration} ke ${selectedDuration} hari. ${lostChecks} data absensi di luar batas akan terhapus. Lanjutkan?`,
-              () => {
-                item.attendance = item.attendance.slice(0, selectedDuration);
-                saveData();
-                render();
-              },
-              () => {
-                item.duration = oldDuration;
-                item.name = name;
-                item.note = note;
-                saveData();
-                render();
-              }
-            );
-            return;
+        } else {
+          // Kalau jam/mode reset diubah tapi jumlah hari absen TIDAK diubah manual,
+          // startDate harus digeser ulang biar tetap sinkron sama skema reset yang baru.
+          // Tanpa ini, status "hari ini" bisa telat/nyangkut pas ganti jam reset
+          // (misalnya pindah ke jam 20:00) — ini yang bikin statusnya "ga balik".
+          if (resetSchemeChanged) {
+            const checkedSoFar = getChecked(item);
+            item.startDate = shiftDateStr(selectedResetHour, checkedSoFar);
+            item.lastClaimAt = null;
           }
-          item.attendance = item.attendance.slice(0, selectedDuration);
+          if (selectedDuration > oldDuration) {
+            while (item.attendance.length < selectedDuration) item.attendance.push(false);
+          } else if (selectedDuration < oldDuration) {
+            const lostChecks = item.attendance.slice(selectedDuration).filter(Boolean).length;
+            if (lostChecks > 0) {
+              closeModal($modalForm);
+              showConfirm(
+                'Konfirmasi Perubahan',
+                `Durasi dikurangi dari ${oldDuration} ke ${selectedDuration} hari. ${lostChecks} data absensi di luar batas akan terhapus. Lanjutkan?`,
+                () => {
+                  item.attendance = item.attendance.slice(0, selectedDuration);
+                  saveData();
+                  render();
+                },
+                () => {
+                  item.duration = oldDuration;
+                  item.name = name;
+                  item.note = note;
+                  saveData();
+                  render();
+                }
+              );
+              return;
+            }
+            item.attendance = item.attendance.slice(0, selectedDuration);
+          }
         }
       }
     } else {
@@ -1027,10 +1036,11 @@
     if (e.key === 'Escape') closeAllModals();
   });
 
-  // ---- Auto-refresh badge/countdown (jam custom, rolling 24 jam, ganti tanggal) ----
-  setInterval(() => render(), 30 * 1000); // cek tiap 30 detik, ringan dan cukup responsif
+  // Auto-refresh tiap 30 detik sengaja dimatikan (biar hemat, refresh manual aja
+  // dgn reload halaman kalau mau lihat status ter-update). Refresh tetap jalan
+  // otomatis pas buka lagi tab-nya (lihat visibilitychange di bawah).
 
-  // Refresh juga saat tab kembali aktif (misal HP dikunci lalu dibuka lagi)
+  // Refresh saat tab kembali aktif (misal HP dikunci lalu dibuka lagi)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') render();
   });
