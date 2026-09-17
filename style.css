@@ -129,6 +129,7 @@ body::before {
   border-bottom: 1px solid var(--border);
   margin: 0 calc(-1 * var(--space-md));
   padding: 0 var(--space-md);
+  overflow-x: hidden;
 }
 
 .header-inner {
@@ -140,6 +141,8 @@ body::before {
   padding: var(--space-md) 0;
   gap: var(--space-sm);
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -1063,9 +1066,21 @@ body::before {
   box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
-.duration-options {
-  display: flex;
-  gap: var(--space-sm);
+.form-group input[type="number"]#input-duration {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.form-group input[type="number"]#input-duration:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 
 .reset-mode-options {
@@ -1163,31 +1178,6 @@ body::before {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-bottom: var(--space-sm);
-}
-
-.duration-btn {
-  flex: 1;
-  padding: var(--space-sm) var(--space-md);
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-family: var(--font);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--duration) var(--ease);
-}
-
-.duration-btn:hover {
-  border-color: var(--text-muted);
-  color: var(--text-primary);
-}
-
-.duration-btn.active {
-  background: var(--accent-dim);
-  border-color: var(--accent);
-  color: var(--accent-light);
 }
 
 /* Days modal progress */
@@ -1296,8 +1286,12 @@ body::before {
   }
 
   .header-inner {
-    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
     text-align: center;
+    gap: 6px;
+    padding: var(--space-sm) 0;
   }
 
   .logo {
@@ -1308,6 +1302,18 @@ body::before {
   .header-actions {
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .header-actions .btn {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .user-email {
+    margin-right: 0;
+    max-width: none;
   }
 
   .auth-box {
@@ -1336,12 +1342,10 @@ body::before {
     justify-content: center;
   }
 
-  .duration-options,
   .reset-mode-options {
     gap: 6px;
   }
 
-  .duration-btn,
   .reset-mode-btn {
     font-size: 0.72rem;
     padding: 8px 6px;

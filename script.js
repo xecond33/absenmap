@@ -73,7 +73,7 @@
   const $formGroupInitialProgress = document.getElementById('form-group-initial-progress');
   const $labelInitialProgress = document.getElementById('label-initial-progress');
   const $inputInitialProgress = document.getElementById('input-initial-progress');
-  const $durationOptions = document.getElementById('duration-options');
+  const $inputDuration = document.getElementById('input-duration');
   const $resetModeOptions = document.getElementById('reset-mode-options');
   const $resetHourRow = document.getElementById('reset-hour-row');
   const $inputResetHour = document.getElementById('input-reset-hour');
@@ -364,7 +364,7 @@
     auth.onAuthStateChanged(user => {
       if (user) {
         currentUser = user;
-        $userEmail.textContent = user.email || '';
+        $userEmail.textContent = shortEmail(user.email);
         showApp();
         startDataSync();
       } else {
@@ -376,6 +376,12 @@
         showAuthScreen();
       }
     });
+  }
+
+  // Tampilkan cuma nama depan email, misal "admin@gmail.com" -> "admin"
+  function shortEmail(email) {
+    if (!email) return '';
+    return email.split('@')[0];
   }
 
   function setSyncBadge(state) {
@@ -508,10 +514,7 @@
       result = result.filter(d => d.name.toLowerCase().includes(q));
     }
 
-    if (currentFilter === '7') result = result.filter(d => d.duration === 7);
-    else if (currentFilter === '14') result = result.filter(d => d.duration === 14);
-    else if (currentFilter === '30') result = result.filter(d => d.duration === 30);
-    else if (currentFilter === 'running') result = result.filter(d => getStatus(d) === 'running');
+    if (currentFilter === 'running') result = result.filter(d => getStatus(d) === 'running');
     else if (currentFilter === 'done') result = result.filter(d => getStatus(d) === 'done');
 
     return result;
@@ -670,7 +673,7 @@
       $labelInitialProgress.textContent = 'Sudah Absen Berapa Hari? (opsional, buat data lama)';
     }
 
-    updateDurationBtns();
+    $inputDuration.value = mode === 'edit' ? selectedDuration : '';
     updateResetModeBtns();
     openModal($modalForm);
     setTimeout(() => $inputName.focus(), 100);
@@ -703,24 +706,24 @@
     selectedResetMode = 'fixed';
   });
 
-  function updateDurationBtns() {
-    $durationOptions.querySelectorAll('.duration-btn').forEach(btn => {
-      btn.classList.toggle('active', parseInt(btn.dataset.duration) === selectedDuration);
-    });
-  }
-
-  // Duration buttons
-  $durationOptions.addEventListener('click', e => {
-    const btn = e.target.closest('.duration-btn');
-    if (!btn) return;
-    selectedDuration = parseInt(btn.dataset.duration);
-    updateDurationBtns();
+  // Durasi manual (input angka, dibatasi maksimal 31 hari, boleh dikosongin dulu)
+  $inputDuration.addEventListener('input', () => {
+    if ($inputDuration.value === '') return; // biarin kosong, jangan dipaksa isi
+    let d = parseInt($inputDuration.value);
+    if (isNaN(d)) return;
+    if (d > 31) $inputDuration.value = 31;
   });
 
   // Save form
   $modalFormSave.addEventListener('click', () => {
     const name = $inputName.value.trim();
     const note = $inputNote.value.trim();
+
+    let durationVal = parseInt($inputDuration.value);
+    if (isNaN(durationVal) || durationVal < 1) durationVal = 1;
+    if (durationVal > 31) durationVal = 31;
+    selectedDuration = durationVal;
+
     if (!name) {
       $inputName.focus();
       $inputName.style.borderColor = 'var(--danger)';

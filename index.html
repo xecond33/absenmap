@@ -163,9 +163,6 @@
       </div>
       <div class="filter-chips" id="filter-chips">
         <button class="chip active" data-filter="all">Semua</button>
-        <button class="chip" data-filter="7">7 Hari</button>
-        <button class="chip" data-filter="14">14 Hari</button>
-        <button class="chip" data-filter="30">30 Hari</button>
         <button class="chip" data-filter="running">Berjalan</button>
         <button class="chip" data-filter="done">Selesai</button>
       </div>
@@ -197,12 +194,8 @@
           <input type="text" id="input-name" placeholder="Masukkan nama..." autocomplete="off">
         </div>
         <div class="form-group">
-          <label for="input-duration">Durasi Absensi</label>
-          <div class="duration-options" id="duration-options">
-            <button class="duration-btn" data-duration="7">7 Hari</button>
-            <button class="duration-btn" data-duration="14">14 Hari</button>
-            <button class="duration-btn active" data-duration="30">30 Hari</button>
-          </div>
+          <label for="input-duration">Durasi Absensi (hari)</label>
+          <input type="number" id="input-duration" min="1" max="31" placeholder="Misal: 30 atau 31">
         </div>
         <div class="form-group">
           <label>Waktu Reset</label>
