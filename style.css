@@ -939,6 +939,13 @@ body::before {
   max-width: 380px;
 }
 
+/* Modal konfirmasi bisa muncul di atas modal lain yang masih kebuka (mis. pas
+   "Reset Absensi" dipencet dari dalam modal detail hari), jadi z-index-nya
+   harus lebih tinggi dari modal-overlay biasa (1000), biar gak ketutupan. */
+#modal-confirm {
+  z-index: 1100;
+}
+
 .modal-days {
   max-width: 480px;
   max-height: 90vh;
