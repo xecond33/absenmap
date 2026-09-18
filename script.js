@@ -465,6 +465,17 @@
     return Math.round((getChecked(item) / item.duration) * 100);
   }
 
+  // Dipanggil tiap habis toggle kotak hari secara manual (bukan lewat tombol
+  // "Absen Sekarang"), biar startDate (dasar perhitungan kalender di mode fixed)
+  // tetap sinkron sama jumlah hari yang tercentang sekarang. Tanpa ini, kotak
+  // yang dikosongin manual tetap "nyangkut" di hari kalender lama, jadi klik
+  // "Absen Sekarang" bisa keisi di hari yang salah (mis. Day 2 padahal maunya Day 1).
+  function syncStartDateToChecked(item) {
+    if (item.resetMode === 'rolling') return; // mode rolling gak pakai startDate
+    item.startDate = shiftDateStr(item.resetHour || 0, getChecked(item));
+    item.lastClaimAt = null;
+  }
+
   // Index hari terakhir yang sudah dicentang (bukan berdasar tanggal kalender)
   function getLastCheckedIndex(item) {
     for (let i = item.attendance.length - 1; i >= 0; i--) {
@@ -891,6 +902,7 @@
     if (!item) return;
     const dayIdx = parseInt(cell.dataset.day);
     item.attendance[dayIdx] = !item.attendance[dayIdx];
+    syncStartDateToChecked(item);
     saveData();
     renderDaysModal(item);
     renderStats();
@@ -934,6 +946,7 @@
     const item = data.find(d => d.id === itemId);
     if (!item) return;
     item.attendance[dayIdx] = !item.attendance[dayIdx];
+    syncStartDateToChecked(item);
     saveData();
     render();
   });
