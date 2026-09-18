@@ -397,18 +397,7 @@
   function loadLocalData() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        data = JSON.parse(raw);
-      } else {
-        data = DEFAULT_DATA.map(d => ({
-          id: makeId(),
-          name: d.name,
-          duration: d.duration,
-          attendance: Array(d.duration).fill(false),
-          note: '',
-          startDate: todayStr(),
-        }));
-      }
+      data = raw ? JSON.parse(raw) : [];
       normalizeData();
     } catch {
       data = [];
@@ -437,18 +426,6 @@
         const val = snapshot.val();
         data = val ? Object.values(val) : [];
         normalizeData();
-        // Kalau database masih kosong (project Firebase baru), isi dengan default sekali saja
-        if (!val && !firstSyncDone) {
-          data = DEFAULT_DATA.map(d => ({
-            id: makeId(),
-            name: d.name,
-            duration: d.duration,
-            attendance: Array(d.duration).fill(false),
-            note: '',
-            startDate: todayStr(),
-          }));
-          saveData();
-        }
         firstSyncDone = true;
         render();
       }, err => {
